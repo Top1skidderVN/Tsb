@@ -1,0 +1,75 @@
+local Lighting = game:GetService("Lighting")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
+
+-- XÓA RÁC HIỆU ỨNG + UI
+local function nuke(obj)
+	local name = obj.Name:lower()
+	if obj:IsA("ParticleEmitter") or obj:IsA("Beam") or obj:IsA("Trail") or obj:IsA("Fire") or obj:IsA("Smoke") 
+	or obj:IsA("Sparkles") or obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") or obj:IsA("Decal") 
+	or obj:IsA("Texture") or obj:IsA("MeshPart") or obj:IsA("Explosion")
+	or name:find("aura") or name:find("effect") or name:find("fx") or name:find("smoke")
+	or name:find("fire") or name:find("glow") or name:find("trail") or name:find("shine") or name:find("burst")
+	or name:find("spark") or name:find("particle") or name:find("flash") or name:find("light") then
+		pcall(function() obj:Destroy() end)
+	end
+end
+
+-- XÓA TOÀN BỘ HIỆU ỨNG TRONG LIGHTING
+for _, v in pairs(Lighting:GetChildren()) do
+	if v:IsA("Sky") or v:IsA("Atmosphere") or v:IsA("SunRaysEffect") 
+	or v:IsA("BloomEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("DepthOfFieldEffect") 
+	or v:IsA("BlurEffect") then
+		pcall(function() v:Destroy() end)
+	end
+end
+
+Lighting.ChildAdded:Connect(function(obj)
+	task.wait()
+	if obj:IsA("Sky") or obj:IsA("Atmosphere") or obj:IsA("SunRaysEffect") 
+	or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("DepthOfFieldEffect") 
+	or obj:IsA("BlurEffect") then
+		pcall(function() obj:Destroy() end)
+	end
+end)
+
+-- SET LIGHTING KIỂU FAST MODE BẢN XÁM
+Lighting.OutdoorAmbient = Color3.fromRGB(190, 190, 190)
+Lighting.Ambient = Color3.fromRGB(190, 190, 190)
+Lighting.Brightness = 1
+Lighting.GlobalShadows = false
+Lighting.FogEnd = 1e10
+Lighting.FogStart = 0
+Lighting.ClockTime = 14
+Lighting.ExposureCompensation = 0
+
+-- DỌN NƯỚC CHO TRONG
+if Terrain then
+	Terrain.WaterWaveSize = 0
+	Terrain.WaterWaveSpeed = 0
+	Terrain.WaterReflectance = 0
+	Terrain.WaterTransparency = 1
+end
+
+-- DỌN RÁC CÓ SẴN
+for _, obj in pairs(workspace:GetDescendants()) do
+	nuke(obj)
+end
+
+-- AUTO DỌN RÁC KHI MỚI SPAWN
+workspace.DescendantAdded:Connect(function(obj)
+	task.defer(nuke, obj)
+end)
+
+-- DỌN NHÂN VẬT NGƯỜI CHƠI
+game.Players.PlayerAdded:Connect(function(plr)
+	plr.CharacterAdded:Connect(function(char)
+		for _, obj in pairs(char:GetDescendants()) do
+			nuke(obj)
+		end
+		char.DescendantAdded:Connect(function(obj)
+			task.defer(nuke, obj)
+		end)
+	end)
+end)
+
+print("✅ Fast Mode style Blox Fruit đã bật - Đồ họa xám tươi - sạch sẽ - không bóng - siêu mượt.")
